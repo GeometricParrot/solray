@@ -1,6 +1,7 @@
 use indicatif::ProgressBar;
 
 mod vec3;
+use crate::vec3::*;
 
 fn main() {
 	let image_width = 256;
@@ -11,15 +12,14 @@ fn main() {
 
 	for y in 0..image_height {
 		for x in 0..image_width{
-			let r = x as f32 / (image_width - 1) as f32;
-			let g = (y as f32) / (image_height - 1) as f32;
-			let b = 0.0 as f32;
 
-			let r = (r * 255.999) as i32;
-			let g = (g * 255.999) as i32;
-			let b = (b * 255.999) as i32;
+			let outCol = Color{
+				x: x as f32 / (image_width - 1) as f32,
+				y: y as f32 / (image_height - 1) as f32,
+				z: 0.0,
+			};
+			write_color(&outCol);
 
-			println!("{} {} {}", r, g, g);
 		}
 		bar.inc(1);
 	}

@@ -1,10 +1,10 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Debug, Copy, Clone)]
-struct Vec3{
-	x: f32,
-	y: f32,
-	z: f32,
+pub struct Vec3{
+	pub x: f32,
+	pub y: f32,
+	pub z: f32,
 }
 
 // binary opereators
@@ -143,4 +143,15 @@ impl Vec3 {
 	}
 }
 
-use Vec3 as Point3;
+pub use Vec3 as Point3;
+
+pub use Vec3 as Color;
+
+pub fn write_color(color: &Color) {
+	// Translate the [0,1] component values to the byte range [0,255].
+	let r = (color.x * 255.999) as i32;
+	let g = (color.y * 255.999) as i32;
+	let b = (color.z * 255.999) as i32;
+
+	println!("{} {} {}", r, g, b);
+}
