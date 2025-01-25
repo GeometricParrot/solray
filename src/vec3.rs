@@ -13,9 +13,9 @@ impl Add for Vec3 {
 
 	fn add(self, other: Vec3) -> Vec3{
 		Vec3 {
-			x: self.x - other.x,
-			y: self.y - other.y,
-			z: self.z - other.z,
+			x: self.x + other.x,
+			y: self.y + other.y,
+			z: self.z + other.z,
 		}
 	}
 }
@@ -52,6 +52,17 @@ impl Mul<f32> for Vec3 {
 		}
 	}
 }
+impl Mul<Vec3> for f32 {
+	type Output = Vec3;
+
+	fn mul(self, other: Vec3) -> Vec3{
+		Vec3 {
+			x: self * other.x,
+			y: self * other.y,
+			z: self * other.z,
+		}
+	}
+}
 impl Div<Vec3> for Vec3 {
 	type Output = Vec3;
 
@@ -71,6 +82,17 @@ impl Div<f32> for Vec3 {
 			x: self.x / factor,
 			y: self.y / factor,
 			z: self.z / factor,
+		}
+	}
+}
+impl Div<Vec3> for f32 {
+	type Output = Vec3;
+
+	fn div(self, other: Vec3) -> Vec3{
+		Vec3 {
+			x: self / other.x,
+			y: self / other.y,
+			z: self / other.z,
 		}
 	}
 }
@@ -120,25 +142,25 @@ impl DivAssign<f32> for Vec3 {
 }
 
 impl Vec3 {
-	fn length_squared(&self) -> f32 {
+	pub fn length_squared(&self) -> f32 {
 		self.x * self.x + self.y*self.y + self.z*self.z
 	}
-	fn length(&self) -> f32 {
+	pub fn length(&self) -> f32 {
 		self.length_squared().sqrt()
 	}
-	fn dot(&self, other: &Vec3) -> f32{
+	pub fn dot(&self, other: &Vec3) -> f32{
 		self.x * other.x
 		+ self.y * other.y
 		+ self.z * other.z
 	}
-	fn cross(&self, other: &Vec3) -> Vec3 {
+	pub fn cross(&self, other: &Vec3) -> Vec3 {
 		Vec3 {
 			x: self.y * other.z - self.z * other.y,
 			y: self.z * other.x - self.x * other.z,
 			z: self.x * other.y - self.y * other.x,
 		}
 	}
-	fn normalized(&self) -> Vec3 {
+	pub fn normalized(&self) -> Vec3 {
 		*self / self.length()
 	}
 }
