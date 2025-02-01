@@ -1,10 +1,23 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign, Neg};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3{
 	pub x: f32,
 	pub y: f32,
 	pub z: f32,
+}
+
+// unary opereators
+impl Neg for Vec3 {
+	type Output = Vec3;
+
+	fn neg(self) -> Vec3{
+		Vec3 {
+			x: -self.x,
+			y: -self.y,
+			z: -self.z,
+		}
+	}
 }
 
 // binary opereators

@@ -1,5 +1,6 @@
-use crate::vec3::*;
+pub use crate::vec3::*;
 
+#[derive(Debug, Copy, Clone)]
 pub struct Ray {
 	pub origin: Point3,
 	pub dir: Vec3,

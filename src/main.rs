@@ -2,24 +2,35 @@ use std::cmp::max;
 
 use indicatif::ProgressBar;
 
-pub mod ray;
 pub mod vec3;
+pub mod ray;
+pub mod hittable;
+pub mod sphere;
 pub use crate::vec3::*;
 pub use crate::ray::*;
+pub use crate::hittable::*;
+pub use crate::sphere::*;
 
-fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> bool {
+fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> f32 {
 	let oc: Vec3 = *center - r.origin;
-	let a = Vec3::dot(&r.dir, &r.dir);
-	let b = -2.0 * Vec3::dot(&r.dir, &oc);
-	let c = Vec3::dot(&oc, &oc) - radius * radius;
-	let discriminant = b*b - 4.0 * a * c;
-	discriminant >= 0.0
+	let a = r.dir.length_squared();
+	let h = Vec3::dot(&r.dir, &oc);
+	let c = oc.length_squared() - radius * radius;
+	let discriminant = h*h - a * c;
+	if discriminant < 0.0 {
+		return -1.0;
+	} else {
+		return (h - discriminant.sqrt()) / a;
+	}
 }
 
 fn ray_color(r: &Ray) -> Color {
-	if hit_sphere(&Point3{x: 0.0, y: 0.0, z: 1.0}, 0.5, r) {
-		return Color{x: 1.0, y: 0.0, z: 0.0};
+	let t = hit_sphere(&Point3{x: 0.0, y: 0.0, z: -1.0}, 0.5, r);
+	if t > 0.0 {
+		let normal = (r.at(t) - Vec3{x: 0.0, y: 0.0, z: -1.0}).normalized();
+		return 0.5 * (normal + Vec3{x: 1.0, y: 1.0, z: 1.0});
 	}
+
 	let a = 0.5 * (r.dir.normalized().y + 1.0);
 	(1.0-a)*Color{x: 1.0, y: 1.0, z: 1.0} + a*Color{x: 0.5, y: 0.7, z: 1.0}
 }
