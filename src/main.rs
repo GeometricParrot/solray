@@ -2,12 +2,24 @@ use std::cmp::max;
 
 use indicatif::ProgressBar;
 
-mod ray;
-mod vec3;
-use crate::vec3::*;
-use crate::ray::*;
+pub mod ray;
+pub mod vec3;
+pub use crate::vec3::*;
+pub use crate::ray::*;
+
+fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> bool {
+	let oc: Vec3 = *center - r.origin;
+	let a = Vec3::dot(&r.dir, &r.dir);
+	let b = -2.0 * Vec3::dot(&r.dir, &oc);
+	let c = Vec3::dot(&oc, &oc) - radius * radius;
+	let discriminant = b*b - 4.0 * a * c;
+	discriminant >= 0.0
+}
 
 fn ray_color(r: &Ray) -> Color {
+	if hit_sphere(&Point3{x: 0.0, y: 0.0, z: 1.0}, 0.5, r) {
+		return Color{x: 1.0, y: 0.0, z: 0.0};
+	}
 	let a = 0.5 * (r.dir.normalized().y + 1.0);
 	(1.0-a)*Color{x: 1.0, y: 1.0, z: 1.0} + a*Color{x: 0.5, y: 0.7, z: 1.0}
 }
