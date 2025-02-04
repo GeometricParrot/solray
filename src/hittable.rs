@@ -1,4 +1,4 @@
-pub use crate::ray::*;
+pub use crate::rtweekend::*;
 
 #[derive(Debug, Copy, Clone)]
 pub struct HitRecord {
@@ -16,8 +16,16 @@ impl HitRecord {
 		self.front_face = Vec3::dot(&r.dir, outward_normal) < 0.0;
 		self.normal = if self.front_face {*outward_normal} else {-*outward_normal};
 	}
+	pub fn empty() -> HitRecord {
+		HitRecord{
+			point: Point3::new(0.0, 0.0, 0.0),
+			normal: Vec3::new(0.0, 0.0, 0.0),
+			t: 0.0,
+			front_face: false,
+		}
+	}
 }
 
 pub trait Hittable {
-	fn hit(&self, r: &Ray, ray_tmin: f32, ray_tmax: f32, record: &mut HitRecord) -> bool;
+	fn hit(&self, r: &Ray, ray_t: Interval, record: &mut HitRecord) -> bool;
 }

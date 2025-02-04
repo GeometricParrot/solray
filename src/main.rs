@@ -1,34 +1,25 @@
 use std::cmp::max;
+use std::f32::INFINITY;
 
 use indicatif::ProgressBar;
 
+pub mod rtweekend;
 pub mod vec3;
 pub mod ray;
 pub mod hittable;
+pub mod hittable_list;
 pub mod sphere;
-pub use crate::vec3::*;
-pub use crate::ray::*;
+pub mod interval;
 pub use crate::hittable::*;
+pub use crate::hittable_list::*;
 pub use crate::sphere::*;
 
-fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> f32 {
-	let oc: Vec3 = *center - r.origin;
-	let a = r.dir.length_squared();
-	let h = Vec3::dot(&r.dir, &oc);
-	let c = oc.length_squared() - radius * radius;
-	let discriminant = h*h - a * c;
-	if discriminant < 0.0 {
-		return -1.0;
-	} else {
-		return (h - discriminant.sqrt()) / a;
-	}
-}
 
-fn ray_color(r: &Ray) -> Color {
-	let t = hit_sphere(&Point3{x: 0.0, y: 0.0, z: -1.0}, 0.5, r);
-	if t > 0.0 {
-		let normal = (r.at(t) - Vec3{x: 0.0, y: 0.0, z: -1.0}).normalized();
-		return 0.5 * (normal + Vec3{x: 1.0, y: 1.0, z: 1.0});
+
+fn ray_color(r: &Ray, world: &HittableList) -> Color {
+	let mut rec = HitRecord::empty();
+	if world.hit(r, Interval::new(0.0, INFINITY), &mut rec) {
+		return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
 	}
 
 	let a = 0.5 * (r.dir.normalized().y + 1.0);
@@ -40,6 +31,11 @@ fn main() {
 	let aspect_ratio: f32 = 16.0 / 9.0;
 	let image_width: i32 = 400;
 	let image_height: i32 = max((image_width as f32 / aspect_ratio) as i32, 1);
+
+	// World
+	let mut world = HittableList::new();
+	world.add(Box::new(Sphere{center: Point3::new(0.0, 0.0, -1.0), radius: 0.5}));
+	world.add(Box::new(Sphere{center: Point3::new(0.0, -100.5, -1.0), radius: 100.0}));
 
 	// Camera
 	let focal_lenght = 1.0;
@@ -70,7 +66,7 @@ fn main() {
 			let ray_dir = pixel_center - camera_center;
 			let r = Ray{origin: camera_center, dir: ray_dir};
 
-			let pixel_color = ray_color(&r);
+			let pixel_color = ray_color(&r, &world);
 			write_color(&pixel_color);
 
 		}
