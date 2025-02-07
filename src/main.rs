@@ -18,6 +18,6 @@ fn main() {
 	world.add(Box::new(Sphere{center: Point3::new(0.0, 0.0, -1.0), radius: 0.5}));
 	world.add(Box::new(Sphere{center: Point3::new(0.0, -100.5, -1.0), radius: 100.0}));
 
-	let mut camera = Camera::new(16.0 / 9.0, 400);
+	let mut camera = Camera::new(16.0 / 9.0, 400, 300);
 	camera.render(&world);
 }

@@ -187,9 +187,9 @@ pub use Vec3 as Color;
 
 pub fn write_color(color: &Color) {
 	// Translate the [0,1] component values to the byte range [0,255].
-	let r = (color.x * 255.999) as i32;
-	let g = (color.y * 255.999) as i32;
-	let b = (color.z * 255.999) as i32;
+	let r = (color.x.clamp(0.0, 1.0) * 255.999) as i32;
+	let g = (color.y.clamp(0.0, 1.0) * 255.999) as i32;
+	let b = (color.z.clamp(0.0, 1.0) * 255.999) as i32;
 
 	println!("{} {} {}", r, g, b);
 }
