@@ -1,4 +1,7 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign, Neg};
+use std::ops::Range;
+pub use rand::{Rng, SeedableRng};
+pub use rand_chacha::ChaCha8Rng;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3{
@@ -178,6 +181,27 @@ impl Vec3 {
 	}
 	pub fn normalized(&self) -> Vec3 {
 		*self / self.length()
+	}
+	pub fn random(range: Range<f32>, rng: &mut ChaCha8Rng) -> Vec3 {
+		Vec3::new(rng.random_range(range.clone()), rng.random_range(range.clone()), rng.random_range(range.clone()))
+	}
+	pub fn random_unit_vector(rng: &mut ChaCha8Rng) -> Vec3 {
+		loop {
+			let p = Vec3::random(-1.0..1.0, rng);
+			let length_squared = p.length_squared();
+			if 1e-40 < length_squared && length_squared <= 1.0 {
+				return p / length_squared.sqrt();
+			}
+		}
+	}
+	pub fn random_on_hemisphere(normal: &Vec3, rng: &mut ChaCha8Rng) -> Vec3 {
+		let on_unit_sphere = Vec3::random_unit_vector(rng);
+		if Vec3::dot(&on_unit_sphere, normal) > 0.0 {
+			return on_unit_sphere;
+		}
+		else {
+			return -on_unit_sphere;
+		}
 	}
 }
 

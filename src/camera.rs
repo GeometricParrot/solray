@@ -16,14 +16,15 @@ pub struct Camera {
 }
 
 impl Camera {
-	pub fn ray_color(&self, r: &Ray, world: &HittableList) -> Color {
+	pub fn ray_color(&mut self, r: &Ray, world: &HittableList) -> Color {
 		let mut rec = HitRecord::empty();
 		if world.hit(r, Interval::new(0.0, INFINITY), &mut rec) {
-			return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
+			let direction = Vec3::random_on_hemisphere(&rec.normal, &mut self.rng);
+			return 0.5 * self.ray_color(&Ray::new(rec.point, direction), world);
 		}
 
 		let a = 0.5 * (r.dir.normalized().y + 1.0);
-		(1.0-a)*Color::new(1.0, 1.0, 1.0) + a*Color::new(0.5, 0.7, 1.0)
+		return (1.0-a)*Color::new(1.0, 1.0, 1.0) + a*Color::new(0.5, 0.7, 1.0);
 	}
 
 	pub fn new(aspect_ratio: f32, image_width: i32, samples_per_pixel: i32) -> Camera {
