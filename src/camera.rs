@@ -12,15 +12,18 @@ pub struct Camera {
 	pixel_delta_v: Vec3,
 	pixel_samples_scale: f32,
 	rng: ChaCha8Rng,
-
+	max_depth: i32,
 }
 
 impl Camera {
-	pub fn ray_color(&mut self, r: &Ray, world: &HittableList) -> Color {
+	pub fn ray_color(&mut self, r: &Ray, world: &HittableList, depth: i32) -> Color {
+		if depth <= 0 {
+			return Color::new(0.0, 0.0, 0.0);
+		}
 		let mut rec = HitRecord::empty();
-		if world.hit(r, Interval::new(0.0, INFINITY), &mut rec) {
-			let direction = Vec3::random_on_hemisphere(&rec.normal, &mut self.rng);
-			return 0.5 * self.ray_color(&Ray::new(rec.point, direction), world);
+		if world.hit(r, Interval::new(0.001, INFINITY), &mut rec) {
+			let direction = rec.normal + Vec3::random_unit_vector(&mut self.rng);
+			return 0.5 * self.ray_color(&Ray::new(rec.point, direction), world, depth - 1);
 		}
 
 		let a = 0.5 * (r.dir.normalized().y + 1.0);
@@ -64,6 +67,7 @@ impl Camera {
 			pixel_delta_v: pixel_delta_v,
 			pixel_samples_scale: pixel_samples_scale,
 			rng: rand_chacha::ChaCha8Rng::seed_from_u64(123),
+			max_depth: 10,
 		}
 	}
 
@@ -94,7 +98,7 @@ impl Camera {
 				let mut pixel_color = Color::new(0.0, 0.0, 0.0);
 				for _sample in 0..self.samples_per_pixel {
 					let r = self.get_ray(x, y);
-					pixel_color += self.ray_color(&r, &world);
+					pixel_color += self.ray_color(&r, &world, self.max_depth);
 				}
 				//let pixel_center = self.pixel00_loc + (x as f32 * self.pixel_delta_u) + (y as f32 * self.pixel_delta_v);
 				//let ray_dir = pixel_center - self.center;
