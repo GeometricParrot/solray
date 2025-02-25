@@ -11,12 +11,11 @@ pub struct Camera {
 	pixel_delta_u: Vec3,
 	pixel_delta_v: Vec3,
 	pixel_samples_scale: f32,
-	rng: ChaCha8Rng,
 	max_depth: i32,
 }
 
 impl Camera {
-	pub fn ray_color(&mut self, r: &Ray, world: &HittableList, depth: i32) -> Color {
+	pub fn ray_color(&self, r: &Ray, world: &HittableList, depth: i32, rng: &mut ChaCha8Rng) -> Color {
 		if depth <= 0 {
 			return Color::new(0.0, 0.0, 0.0);
 		}
@@ -25,8 +24,8 @@ impl Camera {
 			let mut scattered = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
 			let mut attenuation = Color::new(0.0, 0.0, 0.0);
 
-			if rec.mat.scatter(r, rec, &mut attenuation, &mut scattered, &mut self.rng) {
-				return attenuation * self.ray_color(&scattered, world, depth-1);
+			if rec.mat.scatter(r, rec, &mut attenuation, &mut scattered, rng) {
+				return attenuation * self.ray_color(&scattered, world, depth-1, rng);
 			}
 			else {
 				return Color::new(0.0, 0.0, 0.0);
@@ -73,20 +72,19 @@ impl Camera {
 			pixel_delta_u: pixel_delta_u,
 			pixel_delta_v: pixel_delta_v,
 			pixel_samples_scale: pixel_samples_scale,
-			rng: rand_chacha::ChaCha8Rng::seed_from_u64(123),
 			max_depth: 10,
 		}
 	}
 
-	fn sample_square(&mut self) -> Vec3 {
-		Vec3::new(self.rng.random_range(-0.5..0.5), self.rng.random_range(-0.5..0.5), 0.0)
+	fn sample_square(&self, rng: &mut ChaCha8Rng) -> Vec3 {
+		Vec3::new(rng.random_range(-0.5..0.5), rng.random_range(-0.5..0.5), 0.0)
 	}
 
-	fn get_ray(&mut self, x: i32, y: i32) -> Ray {
+	fn get_ray(&self, x: i32, y: i32, rng: &mut ChaCha8Rng) -> Ray {
 		// Construct a camera ray originating from the origin and directed at randomly sampled
 		// point around the pixel location x, y.
 		
-		let offset = self.sample_square();
+		let offset = self.sample_square(rng);
 		let pixel_sample = self.pixel00_loc
 			+ (x as f32 + offset.x) * self.pixel_delta_u
 			+ (y as f32 + offset.y) * self.pixel_delta_v;
@@ -94,7 +92,7 @@ impl Camera {
 		Ray{origin: self.center, dir: pixel_sample - self.center}
 	}
 
-	pub fn render(&mut self, world: &HittableList) {
+	pub fn render(&self, world: &HittableList, rng: &mut ChaCha8Rng) {
 		// initalize call is forgone
 		println!("P3\n{} {}\n255", self.image_width, self.image_height);
 
@@ -104,8 +102,8 @@ impl Camera {
 			for x in 0..self.image_width{
 				let mut pixel_color = Color::new(0.0, 0.0, 0.0);
 				for _sample in 0..self.samples_per_pixel {
-					let r = self.get_ray(x, y);
-					pixel_color += self.ray_color(&r, &world, self.max_depth);
+					let r = self.get_ray(x, y, rng);
+					pixel_color += self.ray_color(&r, &world, self.max_depth, rng);
 				}
 				//let pixel_center = self.pixel00_loc + (x as f32 * self.pixel_delta_u) + (y as f32 * self.pixel_delta_v);
 				//let ray_dir = pixel_center - self.center;

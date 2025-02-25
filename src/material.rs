@@ -4,7 +4,7 @@ use crate::hittable::*;
 #[derive(Debug, Copy, Clone)]
 pub enum Material {
 	Lambertian(Color),
-	Metal(Color),
+	Metal(Color, f32),
 	None,
 }
 
@@ -19,11 +19,11 @@ impl Material {
 				*attenuation = *albedo;
 				true
 			},
-			Material::Metal(albedo) => {
-				let reflected = Vec3::reflect(&r_in.dir, &record.normal);
+			Material::Metal(albedo, fuzz) => {
+				let reflected = Vec3::reflect(&r_in.dir, &record.normal).normalized() + (*fuzz * Vec3::random_unit_vector(rng));
 				*scattered = Ray::new(record.point, reflected);
 				*attenuation = *albedo;
-				true
+				return Vec3::dot(&scattered.dir, &record.normal) > 0.0;
 			},
 			_ => {
 				panic!("in 'Material::scatter' unhangled material");
