@@ -1,14 +1,13 @@
 pub use crate::hittable::*;
-pub use crate::sphere::*;
 
 pub struct HittableList
 {
-	pub objects: Vec<Box<Sphere>>,
+	pub objects: Vec<Box<Hittable>>,
 }
 
 impl HittableList
 {
-	pub fn add(&mut self, object: Box<Sphere>) {
+	pub fn add(&mut self, object: Box<Hittable>) {
 		self.objects.push(object);
 	}
 	pub fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {

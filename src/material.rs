@@ -27,7 +27,6 @@ impl Material {
 			},
 			_ => {
 				panic!("in 'Material::scatter' unhangled material");
-				false
 			},
 		}
 	}
