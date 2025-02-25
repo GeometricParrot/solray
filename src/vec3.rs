@@ -203,6 +203,13 @@ impl Vec3 {
 			return -on_unit_sphere;
 		}
 	}
+	pub fn near_zero(&self) -> bool {
+		let epsilon = 1e-8;
+		return (self.x.abs() < epsilon) && (self.y.abs() < epsilon) && (self.z.abs() < epsilon);
+	}
+	pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+		return *v - (2.0 * Vec3::dot(v, n)) * *n;
+	} 
 }
 
 pub use Vec3 as Point3;

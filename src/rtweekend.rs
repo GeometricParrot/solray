@@ -6,6 +6,7 @@ pub use rand_chacha::ChaCha8Rng;
 pub use crate::vec3::*;
 pub use crate::ray::*;
 pub use crate::interval::*;
+pub use crate::material::*;
 pub use std::f32::INFINITY;
 pub use std::cmp::max;
 

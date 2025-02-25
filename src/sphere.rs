@@ -1,16 +1,19 @@
 pub use crate::rtweekend::*;
 pub use crate::hittable::*;
+pub use crate::material::*;
 
 pub struct Sphere {
 	pub center: Point3,
 	pub radius: f32,
+	pub mat: Material,
 }
 
 impl Sphere {
-	pub fn new(center: Point3, radius: f32) -> Sphere{
+	pub fn new(center: Point3, radius: f32, material: Material) -> Sphere {
 		Sphere {
 			center: center,
 			radius: radius,
+			mat: material,
 		}
 	}
 }
@@ -41,6 +44,7 @@ impl Hittable for Sphere {
 		record.point = r.at(record.t);
 		let outward_normal = (record.point - self.center) / self.radius;
 		record.set_face_normal(r, &outward_normal);
+		record.mat = self.mat;
 
 		return true
 	}

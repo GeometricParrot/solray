@@ -4,6 +4,7 @@ pub use crate::rtweekend::*;
 pub struct HitRecord {
 	pub point: Point3,
 	pub normal: Vec3,
+	pub mat: Material,
 	pub t: f32,
 	pub front_face: bool,
 }
@@ -20,6 +21,7 @@ impl HitRecord {
 		HitRecord{
 			point: Point3::new(0.0, 0.0, 0.0),
 			normal: Vec3::new(0.0, 0.0, 0.0),
+			mat: Material::None,
 			t: 0.0,
 			front_face: false,
 		}
