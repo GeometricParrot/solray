@@ -21,7 +21,7 @@ impl HitRecord {
 		HitRecord {
 			point: Point3::new(0.0, 0.0, 0.0),
 			normal: Vec3::new(0.0, 0.0, 0.0),
-			mat: Material::None,
+			mat: Material::Lambertian(Color::new(0.0, 0.0, 0.0)),
 			t: 0.0,
 			front_face: false,
 		}

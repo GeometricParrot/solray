@@ -207,9 +207,15 @@ impl Vec3 {
 		let epsilon = 1e-8;
 		return (self.x.abs() < epsilon) && (self.y.abs() < epsilon) && (self.z.abs() < epsilon);
 	}
-	pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
-		return *v - (2.0 * Vec3::dot(v, n)) * *n;
-	} 
+	pub fn reflect(&self, n: &Vec3) -> Vec3 {
+		return *self - (2.0 * Vec3::dot(self, n)) * *n;
+	}
+	pub fn refract(&self, n: &Vec3, etai_over_etat: f32) -> Vec3 {
+		let cos_theta = f32::min((-*self).dot(n), 1.0);
+		let r_out_perp = etai_over_etat * (*self + cos_theta * *n);
+		let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * *n;
+		return r_out_perp + r_out_parallel;
+	}
 }
 
 pub use Vec3 as Point3;
