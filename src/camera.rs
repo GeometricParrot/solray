@@ -15,7 +15,8 @@ pub struct Camera {
 }
 
 impl Camera {
-	pub fn ray_color(&self, r: &Ray, world: &HittableList, depth: i32, rng: &mut ChaCha8Rng) -> Color {
+	#[deprecated]
+	pub fn legacy_ray_color(&self, r: &Ray, world: &HittableList, depth: i32, rng: &mut ChaCha8Rng) -> Color {
 		if depth <= 0 {
 			return Color::new(0.0, 0.0, 0.0);
 		}
@@ -25,7 +26,7 @@ impl Camera {
 			let mut attenuation = Color::new(0.0, 0.0, 0.0);
 
 			if rec.mat.scatter(r, rec, &mut attenuation, &mut scattered, rng) {
-				return attenuation * self.ray_color(&scattered, world, depth-1, rng);
+				return attenuation * self.legacy_ray_color(&scattered, world, depth-1, rng);
 			}
 			else {
 				return Color::new(0.0, 0.0, 0.0);
@@ -35,6 +36,36 @@ impl Camera {
 		let a = 0.5 * (r.dir.normalized().y + 1.0);
 		return (1.0-a)*Color::new(1.0, 1.0, 1.0) + a*Color::new(0.5, 0.7, 1.0);
 	}
+
+	pub fn ray_color(mut r:  Ray, world: &HittableList, depth: i32, rng: &mut ChaCha8Rng) -> Color {
+		// this is multiplyed by attinuation each iteration
+		let mut output_color = Color::white();
+		let mut temp_attenuation = Color::black();
+		let mut temp_scattered = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
+		for _ in 0..depth {
+			// if the ray hit something
+			let mut rec = HitRecord::empty();
+			if world.hit(&r, Interval::new(0.001, INFINITY), &mut rec) {
+				// if the ray is reflected
+				if rec.mat.scatter(&r, rec, &mut temp_attenuation, &mut temp_scattered, rng) {
+					output_color *= temp_attenuation;
+					r = temp_scattered;
+					continue
+				}
+				// else ray was absorbed, did not reach light source
+				else {
+					return Color::black();
+				}
+			}
+			// ray hit nothing, therefore sky light
+			else {
+				let a = 0.5 * (r.dir.normalized().y + 1.0);
+				output_color *= (1.0-a)*Color::white() + a*Color::new(0.5, 0.7, 1.0);
+				return output_color;
+			}
+		}
+		return Color::black();
+	}	
 
 	pub fn new(aspect_ratio: f32, image_width: i32, samples_per_pixel: i32) -> Camera {
 		//let aspect_ratio = 16.0 / 9.0;
@@ -103,7 +134,7 @@ impl Camera {
 				let mut pixel_color = Color::new(0.0, 0.0, 0.0);
 				for _sample in 0..self.samples_per_pixel {
 					let r = self.get_ray(x, y, rng);
-					pixel_color += self.ray_color(&r, &world, self.max_depth, rng);
+					pixel_color += Camera::ray_color(r, &world, self.max_depth, rng);
 				}
 				//let pixel_center = self.pixel00_loc + (x as f32 * self.pixel_delta_u) + (y as f32 * self.pixel_delta_v);
 				//let ray_dir = pixel_center - self.center;

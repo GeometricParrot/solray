@@ -222,6 +222,15 @@ pub use Vec3 as Point3;
 
 pub use Vec3 as Color;
 
+impl Color {
+	pub fn white() -> Color {
+		return Color::new(1.0, 1.0, 1.0);
+	}
+	pub fn black() -> Color {
+		return Color::new(0.0, 0.0, 0.0);
+	}
+}
+
 pub fn linear_to_gamma(linear_component: f32) -> f32 {
 	if linear_component > 0.0 {
 		return linear_component.sqrt();
