@@ -67,28 +67,35 @@ impl Camera {
 		return Color::black();
 	}	
 
-	pub fn new(aspect_ratio: f32, image_width: i32, samples_per_pixel: i32) -> Camera {
+	pub fn new(aspect_ratio: f32, image_width: i32, vfov: f32, samples_per_pixel: i32, look_from: Vec3, look_at: Vec3, up: Vec3) -> Camera {
 		//let aspect_ratio = 16.0 / 9.0;
 		//let image_width = 400;
 		let image_height = max((image_width as f32 / aspect_ratio) as i32, 1);
-		let center = Point3::new(0.0, 0.0, 0.0);
+		let center = look_from;
 
 
 		// Determine viewport dimensions.
-		let focal_lenght = 1.0;
-		let viewport_height = 2.0;
+		let focal_lenght = (look_from - look_at).length();
+		let theta = deg_to_rad(vfov);
+		let h = (theta / 2.0).tan();
+		let viewport_height = 2.0 * h * focal_lenght;
 		let viewport_width = viewport_height * (image_width as f32 / image_height as f32);
 
+		// Calculate the u,v,w unit basis vectors for the camera coordinate frame.
+		let w = (look_from - look_at).normalized();
+		let u = up.cross(&w).normalized();
+		let v = w.cross(&u);
+
 		// Calculate the vectors across the horizontal and down the vertical viewport edges.
-		let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
-		let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+		let viewport_u = viewport_width * u;
+		let viewport_v = viewport_height * -v;
 
 		// Calculate the horizontal and vertical delta vectors from pixel to pixel.
 		let pixel_delta_u = viewport_u / image_width as f32;
 		let pixel_delta_v = viewport_v / image_height as f32;
 
 		// Calculate the location of the upper left pixel.
-		let viewport_upper_left = center - Vec3::new(0.0, 0.0, focal_lenght) - viewport_u/2.0 - viewport_v/2.0;
+		let viewport_upper_left = center - (focal_lenght * w) - viewport_u/2.0 - viewport_v/2.0;
 		let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
 		let pixel_samples_scale = 1.0 / samples_per_pixel as f32;

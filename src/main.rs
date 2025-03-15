@@ -41,6 +41,14 @@ fn main() {
 		radius: 0.5,
 		mat: Material::Metal(Color::new(0.8, 0.6, 0.2), 1.0)}));
 
-	let camera = Camera::new(16.0 / 9.0, 400, 300);
+	let camera = Camera::new(
+		16.0 / 9.0,
+		400,
+		20.0,
+		300,
+		Point3::new(-2.0, 2.0, 1.0),
+		Point3::new(0.0, 0.0, -1.0),
+		Vec3::new(0.0, 1.0, 0.0),
+	);
 	camera.render(&world, &mut rng);
 }
