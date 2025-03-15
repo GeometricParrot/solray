@@ -185,6 +185,14 @@ impl Vec3 {
 	pub fn random(range: Range<f32>, rng: &mut ChaCha8Rng) -> Vec3 {
 		Vec3::new(rng.random_range(range.clone()), rng.random_range(range.clone()), rng.random_range(range.clone()))
 	}
+	pub fn random_on_disk(rng: &mut ChaCha8Rng) -> Vec3 {
+		loop {
+			let p = Vec3::new(rng.random_range(-1.0..1.0), rng.random_range(-1.0..1.0), 0.0);
+			if p.length_squared() < 1.0 {
+				return p;
+			}
+		}
+	}
 	pub fn random_unit_vector(rng: &mut ChaCha8Rng) -> Vec3 {
 		loop {
 			let p = Vec3::random(-1.0..1.0, rng);
