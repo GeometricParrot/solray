@@ -126,7 +126,7 @@ impl Camera {
 			pixel_delta_u: pixel_delta_u,
 			pixel_delta_v: pixel_delta_v,
 			pixel_samples_scale: pixel_samples_scale,
-			max_depth: 10,
+			max_depth: 15,
 			defocus_angle: defocus_angle,
 			defocus_disk_u: u * defocus_radius,
 			defocus_disk_v: v * defocus_radius,

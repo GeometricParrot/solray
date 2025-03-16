@@ -12,45 +12,52 @@ pub use crate::hittable::*;
 pub use crate::hittable_list::*;
 
 fn main() {
-	let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(123);
+	let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(121);
 	// World
 	let mut world = HittableList::new();
 	// floor
 	world.add( Box::new( Hittable::Shpere {
-		center: Point3::new(0.0, -100.5, -1.0),
-		radius: 100.0,
-		mat: Material::Lambertian(Color::new(0.8, 0.8, 0.0))}));
-	// center
-	world.add( Box::new( Hittable::Shpere {
-		center: Point3::new(0.0, 0.0, -1.2),
-		radius: 0.5,
-		mat: Material::Lambertian(Color::new(0.1, 0.2, 0.5))}));
-	// left
-	world.add( Box::new( Hittable::Shpere {
-		center: Point3::new(-1.0, 0.0, -1.0),
-		radius: 0.5,
-		mat: Material::Dielectric(1.50)}));
-	// left bubble
-	world.add( Box::new( Hittable::Shpere {
-		center: Point3::new(-1.0, 0.0, -1.0),
-		radius: 0.4,
-		mat: Material::Dielectric(1.00 / 1.50)}));
-	// right
-	world.add( Box::new( Hittable::Shpere {
-		center: Point3::new(1.0, 0.0, -1.0),
-		radius: 0.5,
-		mat: Material::Metal(Color::new(0.8, 0.6, 0.2), 1.0)}));
+		center: Point3::new(0.0, -1001.0, 0.0),
+		radius: 1000.0,
+		mat: Material::Lambertian(Color::new(0.9, 0.9, 0.9))})
+	);
+
+	for x in -10..10 {
+		for z in -10..10 {
+			let random = rng.random_range(0.0..1.0);
+
+			let col = Color::new(
+				(rng.random_range(0.0..1.0) as f32).powi(2),
+				(rng.random_range(0.0..1.0) as f32).powi(2),
+				(rng.random_range(0.0..1.0) as f32).powi(2),
+			);
+
+			world.add( Box::new( Hittable::Shpere {
+				center: Point3::new(x as f32 + rng.random_range(-0.5..0.5), rng.random_range(-1.0..2.0), z as f32 + rng.random_range(-0.5..0.5)),
+				radius: 0.25 + (rng.random_range(0.0..1.1) as f32).powi(3) / 2.0,
+
+				mat: if random < 0.5 {
+					Material::Lambertian(col)
+				} else  if random < 0.9 {
+					Material::Metal(col, (rng.random_range(0.0..0.9) as f32).powi(2))
+				} else {
+					Material::Dielectric(rng.random_range(1.1..1.9))
+				}
+				
+			}));
+		}
+	}
 
 	let camera = Camera::new(
 		16.0 / 9.0,
-		400,
-		20.0,
-		300,
-		Point3::new(-2.0, 2.0, 1.0),
-		Point3::new(0.0, 0.0, -1.0),
+		2560 / 4,
+		60.0,
+		1000 / 4,
+		Point3::new(3.0, 3.0, 13.0),
+		Point3::new(0.0, 0.0, 0.0),
 		Vec3::new(0.0, 1.0, 0.0),
-		10.0,
-		3.4,
+		0.25,
+		5.0,
 	);
 	camera.render(&world, &mut rng);
 }
