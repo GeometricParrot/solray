@@ -10,3 +10,7 @@ book independently.
 
 To run the project, clone the repo, and navigate to its directory. Then run the
 command `cargo run --release > image.ppm`
+
+Render on March 15, 2025:
+
+![screenshot](renders/Weekend_Render.png)
