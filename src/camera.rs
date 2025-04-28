@@ -1,6 +1,8 @@
 pub use crate::rtweekend::*;
 pub use crate::hittable_list::*;
 
+use std::sync::mpsc::Sender;
+
 pub struct Camera {
 	pub aspect_ratio: f32,
 	pub image_width: i32,
@@ -10,7 +12,7 @@ pub struct Camera {
 	pixel00_loc: Point3,
 	pixel_delta_u: Vec3,
 	pixel_delta_v: Vec3,
-	pixel_samples_scale: f32,
+	pub pixel_samples_scale: f32,
 	max_depth: i32,
 	defocus_angle: f32,
 	defocus_disk_u: Vec3,
@@ -133,9 +135,7 @@ impl Camera {
 		}
 	}
 
-	fn sample_square(&self, rng: &mut ChaCha8Rng) -> Vec3 {
-		Vec3::new(rng.random_range(-0.5..0.5), rng.random_range(-0.5..0.5), 0.0)
-	}
+
 
 	fn defocus_disk_sample(&self, rng: &mut ChaCha8Rng) -> Point3 {
 		// Returns a random point in the camera defocus disk.
@@ -147,7 +147,7 @@ impl Camera {
 		// Construct a camera ray originating from the defocus disk and directed at randomly sampled
 		// point around the pixel location x, y.
 		
-		let offset = self.sample_square(rng);
+		let offset = Vec3::sample_square(rng);
 		let pixel_sample = self.pixel00_loc
 			+ (x as f32 + offset.x) * self.pixel_delta_u
 			+ (y as f32 + offset.y) * self.pixel_delta_v;
@@ -160,24 +160,22 @@ impl Camera {
 		}
 	}
 
-	pub fn render(&self, world: &HittableList, rng: &mut ChaCha8Rng) {
+	pub fn render(camera: Arc<Camera>, world: &HittableList, tx: Sender<Color>, rng: &mut ChaCha8Rng) {
 		// initalize call is forgone
-		println!("P3\n{} {}\n255", self.image_width, self.image_height);
+		println!("P3\n{} {}\n255", camera.image_width, camera.image_height);
 
-		let bar = ProgressBar::new(self.image_height as u64);
+		let bar = ProgressBar::new(camera.image_height as u64);
 
-		for y in 0..self.image_height {
-			for x in 0..self.image_width{
+		for y in 0..camera.image_height {
+			let tx = tx.clone();
+			let camera = camera.clone();
+			for x in 0..camera.image_width {
 				let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-				for _sample in 0..self.samples_per_pixel {
-					let r = self.get_ray(x, y, rng);
-					pixel_color += Camera::ray_color(r, &world, self.max_depth, rng);
+				for _sample in 0..camera.samples_per_pixel {
+					let r = camera.get_ray(x, y, rng);
+					pixel_color += Camera::ray_color(r, &world, camera.max_depth, rng);
 				}
-				//let pixel_center = self.pixel00_loc + (x as f32 * self.pixel_delta_u) + (y as f32 * self.pixel_delta_v);
-				//let ray_dir = pixel_center - self.center;
-				//let r = Ray{origin: self.center, dir: ray_dir};
-
-				write_color(&(pixel_color * self.pixel_samples_scale));
+				tx.send(pixel_color * camera.pixel_samples_scale).unwrap();
 
 			}
 			bar.inc(1);

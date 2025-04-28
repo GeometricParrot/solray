@@ -193,6 +193,9 @@ impl Vec3 {
 			}
 		}
 	}
+	pub fn sample_square(rng: &mut ChaCha8Rng) -> Vec3 {
+		Vec3::new(rng.random_range(-0.5..0.5), rng.random_range(-0.5..0.5), 0.0)
+	}
 	pub fn random_unit_vector(rng: &mut ChaCha8Rng) -> Vec3 {
 		loop {
 			let p = Vec3::random(-1.0..1.0, rng);

@@ -2,6 +2,7 @@ pub use indicatif::ProgressBar;
 pub use rand::{Rng, SeedableRng};
 pub use rand_chacha::ChaCha8Rng;
 
+pub use std::sync::Arc;
 
 pub use crate::vec3::*;
 pub use crate::ray::*;

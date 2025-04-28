@@ -11,6 +11,8 @@ use camera::Camera;
 pub use crate::hittable::*;
 pub use crate::hittable_list::*;
 
+use std::sync::mpsc;
+
 fn main() {
 	let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(121);
 	// World
@@ -48,7 +50,7 @@ fn main() {
 		}
 	}
 
-	let camera = Camera::new(
+	let camera = Arc::new(Camera::new(
 		16.0 / 9.0,
 		2560 / 4,
 		60.0,
@@ -58,6 +60,15 @@ fn main() {
 		Vec3::new(0.0, 1.0, 0.0),
 		0.25,
 		5.0,
-	);
-	camera.render(&world, &mut rng);
+	));
+
+	let (tx, rx) = mpsc::channel();
+
+	Camera::render(camera.clone(), &world, tx.clone(), &mut rng);
+
+	drop(tx);
+	for message in &rx {
+		write_color(&(message));
+	}
+
 }
