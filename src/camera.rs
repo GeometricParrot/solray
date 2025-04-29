@@ -2,12 +2,13 @@ pub use crate::rtweekend::*;
 pub use crate::hittable_list::*;
 
 use std::sync::mpsc::Sender;
+use std::thread;
 
 pub struct Camera {
 	pub aspect_ratio: f32,
 	pub image_width: i32,
 	pub samples_per_pixel: i32,
-	image_height: i32,
+	pub image_height: i32,
 	center: Point3,
 	pixel00_loc: Point3,
 	pixel_delta_u: Vec3,
@@ -160,25 +161,28 @@ impl Camera {
 		}
 	}
 
-	pub fn render(camera: Arc<Camera>, world: &HittableList, tx: Sender<Color>, rng: &mut ChaCha8Rng) {
+	pub fn render(camera: Arc<Camera>, world: Arc<HittableList>, tx: Sender<(Color, i32, i32)>, rng: &mut ChaCha8Rng) {
 		// initalize call is forgone
 		println!("P3\n{} {}\n255", camera.image_width, camera.image_height);
 
-		let bar = ProgressBar::new(camera.image_height as u64);
-
-		for y in 0..camera.image_height {
+		let num_threads = 32;
+		for thread in 0..num_threads {
+			let world = world.clone();
+			let mut rng = rng.clone();
 			let tx = tx.clone();
 			let camera = camera.clone();
-			for x in 0..camera.image_width {
-				let mut pixel_color = Color::new(0.0, 0.0, 0.0);
-				for _sample in 0..camera.samples_per_pixel {
-					let r = camera.get_ray(x, y, rng);
-					pixel_color += Camera::ray_color(r, &world, camera.max_depth, rng);
+			thread::spawn(move || {
+				for y in (thread * camera.image_height / num_threads)..((thread + 1) * camera.image_height / num_threads) {
+					for x in 0..camera.image_width {
+						let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+						for _sample in 0..camera.samples_per_pixel {
+							let r = camera.get_ray(x, y, &mut rng);
+							pixel_color += Camera::ray_color(r, &*world, camera.max_depth, &mut rng);
+						}
+						tx.send((pixel_color * camera.pixel_samples_scale, x, y)).unwrap();
+					}
 				}
-				tx.send(pixel_color * camera.pixel_samples_scale).unwrap();
-
-			}
-			bar.inc(1);
+			});
 		}
 	}
 }

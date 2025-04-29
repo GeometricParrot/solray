@@ -11,8 +11,6 @@ use camera::Camera;
 pub use crate::hittable::*;
 pub use crate::hittable_list::*;
 
-use std::sync::mpsc;
-
 fn main() {
 	let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(121);
 	// World
@@ -64,11 +62,16 @@ fn main() {
 
 	let (tx, rx) = mpsc::channel();
 
-	Camera::render(camera.clone(), &world, tx.clone(), &mut rng);
+	Camera::render(camera.clone(), Arc::new(world), tx, &mut rng);
 
-	drop(tx);
-	for message in &rx {
-		write_color(&(message));
+	let bar = ProgressBar::new((camera.image_height * camera.image_width) as u64);
+	let mut buffer = vec![Color::new(0.0, 0.0, 0.0); (camera.image_height * camera.image_width) as usize];
+	for (color, x, y) in rx {
+		buffer[(x + (y * camera.image_width)) as usize] = color;
+		bar.inc(1);
 	}
 
+	for color in buffer {
+		write_color(&color);
+	}
 }
